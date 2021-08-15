@@ -1,6 +1,11 @@
 #include <iostream>
 #include <limits>
 
+
+void ignoreLine() {
+	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
 void printGrid(int numRows,int numCols, char grid[][3]) {
 	std::cout << '\n';
 	for (int row = 0; row < numRows; row++) {
@@ -11,8 +16,44 @@ void printGrid(int numRows,int numCols, char grid[][3]) {
 	}
 }
 
-void ignoreLine() {
-	std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+void resetGrid(char grid[][3]) {
+	for (int row = 0; row <= 2; row++) {
+		for (int col = 0; col <= 2; col++) {
+			grid[row][col] = '.';
+		}
+	}
+
+	printGrid(3, 3, grid);
+}
+
+bool askForReset(bool isRunning, char grid[][3]) {
+	char resetInput = ' ';
+	bool validInput = false;
+	std::cout << "would you like to play again? y/n: ";
+	do {
+		std::cin >> resetInput;
+		switch (resetInput) {
+		case 'y':
+		case 'Y':
+			resetGrid(grid);
+			isRunning = true;
+			validInput = true;
+			break;
+		case 'n':
+		case 'N':
+			isRunning = false;
+			validInput = true;
+			break;
+		default:
+			std::cout << "\nInvalid input. Please try again.\ny/n: ";
+			ignoreLine();
+			std::cin.clear();
+			validInput = false;
+			break;
+		}
+	} while (!validInput);
+
+	return isRunning;
 }
 
 int handleInputErrors(int newCoordinate) {
@@ -65,7 +106,10 @@ bool testForDiagWin(int player, char players[], char grid[][3]) {
 	int colLeft = 0;
 	int sum = 0;
 	for (int row = 0; row <= 2; row++) {
-		if (grid[row][colRight] == players[player] || grid[row][colLeft] == players[player]) {
+		if (grid[row][colRight] != players[player] && grid[row][colLeft] != players[player]) {
+			return false;
+		}
+		else if (grid[row][colRight] == players[player] || grid[row][colLeft] == players[player]) {
 			sum += row;
 		}
 		colRight--;
@@ -95,9 +139,8 @@ bool testForRowWin(int rowCoordinate, int player, char players[], char grid[][3]
 		std::cout << "Player " << players[player] << " wins!\n";
 		return true;
 	} 
-	else {
+	else 
 		return false;
-	}
 }
 
 bool testForColWin(int colCoordinate, int player, char players[], char grid[][3]) {
@@ -115,9 +158,8 @@ bool testForColWin(int colCoordinate, int player, char players[], char grid[][3]
 		std::cout << "Player " << players[player] << " wins!\n";
 		return true;
 	}
-	else {
+	else 
 		return false;
-	}
 }
 
 bool testForWin(int rowCoordinate, int colCoordinate, int player, char players[], char grid[][3]) {
@@ -165,6 +207,13 @@ int main() {
 			++turnCount;
 		}
 		printGrid(3, 3, noughtsAndCrossesGrid);
-		testForWin(rowCoordinate, colCoordinate, player, players, noughtsAndCrossesGrid);
+		if (testForWin(rowCoordinate, colCoordinate, player, players, noughtsAndCrossesGrid)) {
+			isRunning = askForReset(isRunning, noughtsAndCrossesGrid);
+			turnCount = 0;
+		}
 	} while (isRunning);
+
+	std::cout << "\nThank you for playing!\n";
+
+	return 0;
 }
