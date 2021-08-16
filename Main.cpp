@@ -83,7 +83,7 @@ int setCoordinate() {
 	return newCoordinate;
 }
 
-bool testForCollision(int rowCoordinate, int colCoordinate, char grid[][3]) {
+bool detectCollision(int rowCoordinate, int colCoordinate, char grid[][3]) {
 	bool collision = false;
 	if (grid[rowCoordinate][colCoordinate] == 'x' || grid[rowCoordinate][colCoordinate] == 'o') {
 		std::cout << "\nA collision has been detected. Please try again.\n";
@@ -101,7 +101,16 @@ void addMarkToGrid(int rowCoordinate, int colCoordinate, int player, char grid[]
 	}
 }
 
-bool testForDiagWin(int player, char players[], char grid[][3]) {
+bool detectDraw(int turnCount) {
+	if (turnCount == 9) {
+		std::cout << "Draw!\n";
+		return true;
+	}
+	else
+		return false;
+}
+
+bool detectDiagWin(int player, char players[], char grid[][3]) {
 	int colRight = 2;
 	int colLeft = 0;
 	int sum = 0;
@@ -124,7 +133,7 @@ bool testForDiagWin(int player, char players[], char grid[][3]) {
 		return false;
 }
 
-bool testForRowWin(int rowCoordinate, int player, char players[], char grid[][3]) {
+bool detectRowWin(int rowCoordinate, int player, char players[], char grid[][3]) {
 	int sum = 0;
 	for (int i = 0; i <= 2; i++) {
 		if (grid[rowCoordinate][i] != players[player]) {
@@ -143,7 +152,7 @@ bool testForRowWin(int rowCoordinate, int player, char players[], char grid[][3]
 		return false;
 }
 
-bool testForColWin(int colCoordinate, int player, char players[], char grid[][3]) {
+bool detectColWin(int colCoordinate, int player, char players[], char grid[][3]) {
 	int sum = 0;
 	for (int i = 0; i <= 2; i++) {
 		if (grid[i][colCoordinate] != players[player]) {
@@ -162,14 +171,14 @@ bool testForColWin(int colCoordinate, int player, char players[], char grid[][3]
 		return false;
 }
 
-bool testForWin(int rowCoordinate, int colCoordinate, int player, char players[], char grid[][3]) {
-	if (testForColWin(colCoordinate, player, players, grid)) {
+bool detectWin(int rowCoordinate, int colCoordinate, int player, char players[], char grid[][3]) {
+	if (detectColWin(colCoordinate, player, players, grid)) {
 		return true;
 	}
-	else if (testForRowWin(rowCoordinate, player, players, grid)) {
+	else if (detectRowWin(rowCoordinate, player, players, grid)) {
 		return true;
 	}
-	else if (testForDiagWin(player, players, grid)) {
+	else if (detectDiagWin(player, players, grid)) {
 		return true;
 	}
 	else
@@ -202,12 +211,16 @@ int main() {
 			colCoordinate = setCoordinate();
 		} while (!(colCoordinate >= 0 && colCoordinate <= 2));
 
-		if (!testForCollision(rowCoordinate, colCoordinate, noughtsAndCrossesGrid)) {
+		if (!detectCollision(rowCoordinate, colCoordinate, noughtsAndCrossesGrid)) {
 			addMarkToGrid(rowCoordinate, colCoordinate, player, noughtsAndCrossesGrid);
 			++turnCount;
 		}
 		printGrid(3, 3, noughtsAndCrossesGrid);
-		if (testForWin(rowCoordinate, colCoordinate, player, players, noughtsAndCrossesGrid)) {
+		if (detectWin(rowCoordinate, colCoordinate, player, players, noughtsAndCrossesGrid)) {
+			isRunning = askForReset(isRunning, noughtsAndCrossesGrid);
+			turnCount = 0;
+		}
+		else if (detectDraw(turnCount)) {
 			isRunning = askForReset(isRunning, noughtsAndCrossesGrid);
 			turnCount = 0;
 		}
